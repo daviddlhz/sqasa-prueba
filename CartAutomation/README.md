@@ -94,4 +94,4 @@ Para añadir nuevos casos de prueba:
 
 ## Autor
 
-David (Desarrollador Full Stack) 
+David De La Hoz (Desarrollador Full Stack) 

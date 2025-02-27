@@ -535,4 +535,4 @@ El framework genera múltiples tipos de artefactos para facilitar el diagnóstic
 
 ## Autor
 
-David (Desarrollador Full Stack)
+David De La Hoz (Desarrollador Full Stack)
