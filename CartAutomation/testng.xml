@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="ExpressCart Shopping Cart Test Suite" parallel="tests" thread-count="2">
+    <test name="Shopping Cart Functionality Tests">
+        <classes>
+            <class name="com.expresscart.tests.CartFunctionalityTest" />
+        </classes>
+    </test>
+    <test name="Shopping Cart Error Handling Tests">
+        <classes>
+            <class name="com.expresscart.tests.CartErrorHandlingTest" />
+        </classes>
+    </test>
+</suite> 

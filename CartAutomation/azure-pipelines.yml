@@ -1,0 +1,125 @@
+# Pipeline para pruebas de automatización del carrito ExpressCart
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+
+stages:
+- stage: Test
+  displayName: 'Testing Stage'
+  jobs:
+  - job: FunctionalTests
+    displayName: 'Pruebas de Funcionalidad'
+    timeoutInMinutes: '10'
+    steps:
+    - task: Cache@2
+      inputs:
+        key: 'maven | "$(Agent.OS)" | **/pom.xml'
+        restoreKeys: |
+          maven | "$(Agent.OS)"
+        path: $(MAVEN_CACHE_FOLDER)
+      displayName: 'Cache Maven packages'
+      
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '11'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+      displayName: 'Setup JDK 11'
+      
+    - script: |
+        mvn clean test -f CartAutomation/pom.xml -Dtest=com.expresscart.tests.CartFunctionalityTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+      displayName: 'Run Functional Tests'
+      failOnStderr: 'true'
+      
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        mergeTestResults: true
+        testRunTitle: 'Functional Tests'
+      displayName: 'Publish Functional Test Results'
+      condition: succeededOrFailed()
+      
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'CartAutomation/target/screenshots'
+        ArtifactName: 'test-screenshots'
+        publishLocation: 'Container'
+      displayName: 'Publish Screenshots'
+      condition: failed()
+
+  - job: ErrorHandlingTests
+    displayName: 'Pruebas de Manejo de Errores'
+    timeoutInMinutes: '10'
+    steps:
+    - task: Cache@2
+      inputs:
+        key: 'maven | "$(Agent.OS)" | **/pom.xml'
+        restoreKeys: |
+          maven | "$(Agent.OS)"
+        path: $(MAVEN_CACHE_FOLDER)
+      displayName: 'Cache Maven packages'
+      
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '11'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+      displayName: 'Setup JDK 11'
+      
+    - script: |
+        mvn clean test -f CartAutomation/pom.xml -Dtest=com.expresscart.tests.CartErrorHandlingTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+      displayName: 'Run Error Handling Tests'
+      failOnStderr: 'true'
+      
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        mergeTestResults: true
+        testRunTitle: 'Error Handling Tests'
+      displayName: 'Publish Error Handling Test Results'
+      condition: succeededOrFailed()
+      
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'CartAutomation/target/screenshots'
+        ArtifactName: 'error-test-screenshots'
+        publishLocation: 'Container'
+      displayName: 'Publish Error Screenshots'
+      condition: failed()
+
+- stage: Report
+  dependsOn: Test
+  displayName: 'Reporting Stage'
+  jobs:
+  - job: GenerateReport
+    displayName: 'Generate Test Reports'
+    steps:
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/TEST-*.xml'
+        mergeTestResults: true
+        testRunTitle: 'ExpressCart Shopping Cart Tests'
+      displayName: 'Publish Combined Test Results'
+      
+    - script: |
+        echo "Generando informe de resumen de pruebas..."
+        echo "Fecha de ejecución: $(date)" > test-summary.txt
+        echo "Resultado: $(Agent.JobStatus)" >> test-summary.txt
+        echo "Detalles disponibles en el portal de Azure DevOps" >> test-summary.txt
+      displayName: 'Generate Summary Report'
+      
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'test-summary.txt'
+        ArtifactName: 'test-summary'
+        publishLocation: 'Container'
+      displayName: 'Publish Summary Report'

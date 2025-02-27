@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite thread-count="2" parallel="tests" name="Failed suite [ExpressCart Shopping Cart Test Suite]" guice-stage="DEVELOPMENT" verbose="0">
+  <test thread-count="2" parallel="tests" name="Shopping Cart Functionality Tests(failed)" verbose="0">
+    <classes>
+      <class name="com.expresscart.tests.CartFunctionalityTest">
+        <methods>
+          <include name="testCartTotalCalculation"/>
+          <include name="testRemoveProductFromCart"/>
+          <include name="setUp"/>
+          <include name="testMaxQuantityLimit"/>
+          <include name="testAddProductToCart"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- com.expresscart.tests.CartFunctionalityTest -->
+    </classes>
+  </test> <!-- Shopping Cart Functionality Tests(failed) -->
+</suite> <!-- Failed suite [ExpressCart Shopping Cart Test Suite] -->
